@@ -1,0 +1,11 @@
+{
+  "objectClassName": "ip network",
+  "handle": "NET-1-1-1-0-1",
+  "name": "EXAMPLE-NET",
+  "country": "pl",
+  "cidr0_cidrs": [{ "v4prefix": "203.0.114.0", "length": 24 }],
+  "entities": [
+    { "objectClassName": "entity", "roles": ["registrant"], "vcardArray": ["vcard", [["fn", {}, "text", "Example Hosting Sp. z o.o."], ["kind", {}, "text", "org"]]] },
+    { "objectClassName": "entity", "roles": ["technical"], "vcardArray": ["vcard", [["fn", {}, "text", "Tech Person"], ["kind", {}, "text", "individual"], ["email", {}, "text", "tech@example.invalid"]]] }
+  ]
+}
