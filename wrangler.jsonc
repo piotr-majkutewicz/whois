@@ -1,0 +1,19 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "whois-demo",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-11-07",
+  // Custom domain for the public demo. Wrangler creates the DNS record and certificate on deploy.
+  // The zone (piotrmajkutewicz.pl) must be on the same Cloudflare account that you deploy with.
+  "routes": [{ "pattern": "whois.piotrmajkutewicz.pl", "custom_domain": true }],
+  // Rate limit: 8 lookups per minute per key (client IP), counted separately in each Cloudflare location.
+  // namespace_id is any positive integer written as a string. It is not an account identifier.
+  // The code handles a missing binding (for example in local development).
+  "ratelimits": [
+    {
+      "name": "RATE_LIMITER",
+      "namespace_id": "3001",
+      "simple": { "limit": 8, "period": 60 }
+    }
+  ]
+}
