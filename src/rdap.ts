@@ -87,8 +87,9 @@ export function assessExpiry(expires: string | null, now: Date): Expiry {
   if (!expires) return { days: null, level: "unknown" };
   const t = Date.parse(expires);
   if (Number.isNaN(t)) return { days: null, level: "unknown" };
+  // After expiry the days are rounded away from zero, so "expired 12 hours ago" reads as one day, not zero.
+  if (t <= now.getTime()) return { days: -Math.ceil((now.getTime() - t) / DAY_MS), level: "expired" };
   const days = Math.floor((t - now.getTime()) / DAY_MS);
-  if (t <= now.getTime()) return { days, level: "expired" };
   if (days < 7) return { days, level: "high" };
   if (days < 30) return { days, level: "medium" };
   return { days, level: "ok" };
