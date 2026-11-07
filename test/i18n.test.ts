@@ -145,3 +145,14 @@ describe("coverage of findings", () => {
     expect(DKIM_SELECTORS.length).toBe(7);
   });
 });
+
+describe("dictionary hygiene", () => {
+  it("has no UI text that the page never uses", async () => {
+    const { readFileSync } = await import("node:fs");
+    const code = ["../src/ui.ts", "../src/i18n/localize.ts"].map((f) => readFileSync(new URL(f, import.meta.url), "utf8")).join("\n");
+    const unused = UI_KEYS.filter((k) => !code.includes(`"${k}"`) && !code.includes(`__${k.toUpperCase()}__`) && !new RegExp(`t\\("${k}"\\)`).test(code));
+    // Page placeholders are written in upper snake case (for example __DOMAIN_LABEL__).
+    const snake = (k: string) => `__${k.replace(/([A-Z])/g, "_$1").toUpperCase()}__`;
+    expect(unused.filter((k) => !code.includes(snake(k)))).toEqual([]);
+  });
+});

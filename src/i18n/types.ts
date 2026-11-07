@@ -91,13 +91,13 @@ export const UI_KEYS = [
   "expiresIn", "expiresToday", "expiredAgo", "dayOne", "dayMany", "checkedDomain", "availableNote",
   // sections and tiles
   "sectionRegistration", "sectionDns", "sectionHosting", "sectionMail", "tileOk", "tileWarn", "tileBad", "tileUnknown", "tileInfo",
-  "tileDnsHeadline", "tileDnsNone", "tileHostingHeadline", "tileHostingNone", "tileMxNone",
+  "tileDnsHeadline", "tileDnsNone", "tileHostingHeadline", "tileHostingNone",
   // summary and findings
   "topHeading", "noTop", "findingsHeading", "noFindings", "severityHigh", "severityMedium", "severityLow", "why", "fix", "howWeKnow",
   // sources
   "srcRdapDomain", "srcRdapIp", "srcDoh", "srcDerived", "srcCache",
   // registration card
-  "rowStatus", "rowRegistrar", "rowRegistered", "rowExpires", "rowChanged", "rowStatuses", "rowNameservers", "rowDnssec", "rowOwner",
+  "rowRegistrar", "rowRegistered", "rowExpires", "rowChanged", "rowStatuses", "rowNameservers", "rowDnssec", "rowOwner",
   "ownerHidden", "dnssecSigned", "dnssecUnsigned", "dnssecUnknown", "valueUnknown",
   "regAvailableText", "regUnsupportedText", "regRateLimitedText", "regUnavailableText", "regDelayNote", "regCachedNote",
   // dns card
@@ -108,8 +108,8 @@ export const UI_KEYS = [
   // mail card
   "mailIntro", "mailRatingGood", "mailRatingImprove", "mailRatingRisk", "mailRatingNone", "mailRatingUnknown", "mailRatingLabel",
   "rowMx", "rowSpf", "rowDmarc", "rowDkim", "rowMtaSts", "rowTlsRpt",
-  "mxNone", "mxNull", "mxUnknown", "spfNone", "spfMultiple", "spfUnknown", "spfValue", "spfValueMore", "spfBroken",
-  "terminalHard", "terminalSoft", "terminalNeutral", "terminalOpen", "terminalNone",
+  "mxNone", "mxNull", "mxUnknown", "spfNone", "spfMultiple", "spfUnknown", "spfValue", "spfValueMore", "spfNoEnd", "spfBroken",
+  "terminalHard", "terminalSoft", "terminalNeutral", "terminalOpen",
   "dmarcNone", "dmarcMultiple", "dmarcUnknown", "dmarcInvalid", "dmarcValue", "policyNone", "policyQuarantine", "policyReject", "reportsYes", "reportsNo",
   "dkimFound", "dkimNotFound", "dkimUnknown", "dkimCname", "dkimNote", "recordPresent", "recordAbsent", "recordUnknown", "mailRecordsNote",
   // not shown, coverage, footer
