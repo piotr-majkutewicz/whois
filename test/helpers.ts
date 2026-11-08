@@ -22,6 +22,8 @@ export const TYPE_NUM: Record<string, number> = { A: 1, NS: 2, CNAME: 5, SOA: 6,
 export interface FakeNet {
   fetch: (url: string, init?: RequestInit) => Promise<Response>;
   calls: string[];
+  /** Headers of every request, in the same order as `calls`. */
+  headers: Record<string, string>[];
   /** How many calls went to each kind of endpoint. */
   count: (needle: string) => number;
   rdapDomain: (url: string) => Response | Promise<Response>;
@@ -35,21 +37,39 @@ export const dohAnswer = (rows: DnsEntry[], status = 0) =>
 
 export const q = (type: string, data: string): DnsEntry => ({ type: TYPE_NUM[type]!, data: type === "TXT" ? JSON.stringify(data) : data });
 
-export function fakeNet(zone: Zone, opts: { rdapDomain?: (url: string) => Response | Promise<Response>; ipv4?: (url: string) => Response } = {}): FakeNet {
+export function fakeNet(
+  zone: Zone,
+  opts: {
+    rdapDomain?: (url: string) => Response | Promise<Response>;
+    ipv4?: (url: string) => Response;
+    /** Registry that the bootstrap file names for .pl (default: a fake host). */
+    plRegistry?: string;
+    /** Handler for the optional proxy (host rdap-proxy.example.com). */
+    proxy?: (url: string, headers: Record<string, string>) => Response | Promise<Response>;
+  } = {},
+): FakeNet {
   const calls: string[] = [];
+  const headers: Record<string, string>[] = [];
+  const plRegistry = opts.plRegistry ?? "https://rdap.registry.example/";
   const net: FakeNet = {
     calls,
+    headers,
     count: (needle) => calls.filter((c) => c.includes(needle)).length,
     rdapDomain: opts.rdapDomain ?? (() => json(fixture("rdap-pl.json"))),
-    fetch: async (url) => {
+    fetch: async (url, init) => {
       calls.push(url);
+      headers.push(Object.fromEntries(new Headers(init?.headers).entries()));
       const u = new URL(url);
       if (u.host === "data.iana.org") {
-        if (u.pathname.endsWith("dns.json")) return json({ services: [[["pl", "com"], ["https://rdap.registry.example/"]], [["nordap"], ["http://insecure.example/"]]] }, 200, "application/json");
+        if (u.pathname.endsWith("dns.json")) return json({ services: [[["pl"], [plRegistry]], [["com"], ["https://rdap.registry.example/"]], [["nordap"], ["http://insecure.example/"]]] }, 200, "application/json");
         if (u.pathname.endsWith("ipv4.json")) return json({ services: [[["203.0.0.0/8"], ["https://rdap.rir.example/"]]] }, 200, "application/json");
         if (u.pathname.endsWith("ipv6.json")) return json({ services: [[["2a00::/12"], ["https://rdap.rir.example/"]]] }, 200, "application/json");
       }
-      if (u.host === "rdap.registry.example") return net.rdapDomain(url);
+      if (u.host === "rdap.registry.example" || u.host === "rdap.dns.pl") return net.rdapDomain(url);
+      if (u.host === "rdap-proxy.example.com") {
+        if (!opts.proxy) throw new Error("proxy not expected");
+        return opts.proxy(url, headers[headers.length - 1]!);
+      }
       if (u.host === "rdap.rir.example") return opts.ipv4 ? opts.ipv4(url) : json(fixture("rdap-ip.json"));
       if (u.host === "cloudflare-dns.com") {
         const name = u.searchParams.get("name")!;

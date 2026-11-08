@@ -6,6 +6,12 @@
   // Custom domain for the public demo. Wrangler creates the DNS record and certificate on deploy.
   // The zone (piotrmajkutewicz.pl) must be on the same Cloudflare account that you deploy with.
   "routes": [{ "pattern": "whois.piotrmajkutewicz.pl", "custom_domain": true }],
+  // Optional intermediary for the .pl registry (see proxy/README.md). Set these as secrets, they are not
+  // listed here on purpose: a plain "vars" entry would be overwritten on every deploy.
+  //   npx wrangler secret put RDAP_PROXY_URL            (https://host name of the tunnel, no port, no path)
+  //   npx wrangler secret put RDAP_PROXY_KEY            (the same value as PROXY_KEY on the server)
+  //   npx wrangler secret put RDAP_PROXY_ACCESS_ID      (optional, Cloudflare Access service token)
+  //   npx wrangler secret put RDAP_PROXY_ACCESS_SECRET  (optional)
   // Rate limit: 8 lookups per minute per key (client IP), counted separately in each Cloudflare location.
   // namespace_id is any positive integer written as a string. It is not an account identifier.
   // The code handles a missing binding (for example in local development).
