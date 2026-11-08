@@ -66,6 +66,7 @@ export const pl: Dictionary = {
     howWeKnow: "Skąd wiemy: ",
 
     srcRdapDomain: "RDAP rejestru {registry}",
+    srcRdapDomainProxy: "RDAP rejestru {registry} (przez pośrednika)",
     srcRdapIp: "RDAP rejestru adresów IP {registry}",
     srcDoh: "DNS przez Cloudflare 1.1.1.1",
     srcDerived: "wyliczone z rekordów DNS",

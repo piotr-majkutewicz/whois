@@ -314,7 +314,7 @@ ul.plain li{margin:0 0 6px}
     return p;
   }
   function sourceText(n, src) {
-    if (src === "rdap_domain") return T("srcRdapDomain", { registry: n.registration.registry || "" }) + (n.registration.cached ? " " + T("srcCache") : "");
+    if (src === "rdap_domain") return T(n.registration.via === "proxy" ? "srcRdapDomainProxy" : "srcRdapDomain", { registry: n.registration.registry || "" }) + (n.registration.cached ? " " + T("srcCache") : "");
     if (src === "rdap_ip") {
       var h = n.hosting.filter(function (x) { return x.registry; })[0];
       return T("srcRdapIp", { registry: h ? h.registry : "" });

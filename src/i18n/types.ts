@@ -95,7 +95,7 @@ export const UI_KEYS = [
   // summary and findings
   "topHeading", "noTop", "findingsHeading", "noFindings", "severityHigh", "severityMedium", "severityLow", "why", "fix", "howWeKnow",
   // sources
-  "srcRdapDomain", "srcRdapIp", "srcDoh", "srcDerived", "srcCache",
+  "srcRdapDomain", "srcRdapDomainProxy", "srcRdapIp", "srcDoh", "srcDerived", "srcCache",
   // registration card
   "rowRegistrar", "rowRegistered", "rowExpires", "rowChanged", "rowStatuses", "rowNameservers", "rowDnssec", "rowOwner",
   "ownerHidden", "dnssecSigned", "dnssecUnsigned", "dnssecUnknown", "valueUnknown",

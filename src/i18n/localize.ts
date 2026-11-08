@@ -28,7 +28,7 @@ const RATING_KEY = {
 export function sourceText(result: LookupResult, source: Finding["source"], lang: Lang): string {
   const ui = dictionary(lang).ui;
   switch (source) {
-    case "rdap_domain": return format(ui.srcRdapDomain, { registry: result.registration.registry ?? "" });
+    case "rdap_domain": return format(result.registration.via === "proxy" ? ui.srcRdapDomainProxy : ui.srcRdapDomain, { registry: result.registration.registry ?? "" });
     case "rdap_ip": return format(ui.srcRdapIp, { registry: result.hosting.find((h) => h.registry)?.registry ?? "" });
     case "doh": return ui.srcDoh;
     case "derived": return ui.srcDerived;
