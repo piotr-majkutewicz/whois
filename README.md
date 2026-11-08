@@ -54,6 +54,16 @@ Endings without an RDAP service (not in the bootstrap file) get an honest "this 
 
 For these two cases (`unsupported` and `rate_limited`) the registration card also offers a link, "Information about the .xx registry (IANA)", opened in a new tab with `rel="noopener noreferrer"`. It points to the IANA page of the ending (`https://www.iana.org/domains/root/db/<tld>.html`), which names the registry and links to it. Registry addresses are deliberately not guessed per ending, and the link is not a search result for the domain: the page says so. The address is built only from the validated ending of the checked domain (letters, or punycode) and sent to the client as `registration.registryUrl`; the page re-validates it before rendering it with the DOM API. The tool itself never sends a request to these pages, it only offers the link.
 
+### Optional proxy for the .pl registry
+
+The `.pl` registry (NASK) answers HTTP 429 to requests that come from the shared address pool of Cloudflare Workers, while answering normally elsewhere. Rather than showing "try again later" for every `.pl` domain, the Worker can ask through a small intermediary that runs on a separate server (`proxy/`, a dependency-free Node service in Docker behind a Cloudflare Tunnel with no open ports). It is entirely optional: without the settings the Worker behaves as described above.
+
+- Set `RDAP_PROXY_URL` (https host name only: no IP address, port, path or credentials), `RDAP_PROXY_KEY` and optionally `RDAP_PROXY_ACCESS_ID` / `RDAP_PROXY_ACCESS_SECRET` (Cloudflare Access service token) with `wrangler secret put`. Invalid settings are ignored with a single warning that does not contain the values.
+- Only `.pl` lookups use it. A clear answer from the proxy (200, a JSON 404, 429) is taken as it is. A network error, timeout, 5xx or an unexpected page makes the Worker ask the registry directly once, so a broken proxy never makes things worse.
+- The source line then reads "RDAP of the rdap.dns.pl registry (through an intermediary)", and the neutral data has `registration.via = "proxy"`. The keys never appear in responses, the page or messages.
+
+See [proxy/README.md](proxy/README.md) for the security model and a step-by-step setup.
+
 ## Languages
 
 The UI is in Polish by default, whatever the browser language is. The PL / EN switch in the header (a button group with `aria-label` and `aria-pressed`, 44 px targets) changes the language. The choice is kept in `localStorage` (the page works without it); `?lang=pl|en` in the address wins and `<html lang>` follows. Switching **never repeats the lookup**: the API returns language-neutral data (ids, parameters, values) and the page renders texts from the two dictionaries embedded in it (`src/i18n/pl.ts`, `src/i18n/en.ts`).

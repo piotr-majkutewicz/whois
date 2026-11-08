@@ -16,3 +16,6 @@ jobs:
       - run: npm ci
       - run: npm run typecheck
       - run: npm test
+      - name: Proxy tests (no dependencies to install)
+        run: node --test
+        working-directory: proxy
