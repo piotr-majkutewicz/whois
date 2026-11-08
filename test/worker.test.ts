@@ -40,7 +40,8 @@ describe("page", () => {
   it("loads nothing from outside and links only to the author's site", async () => {
     const html = await (await call("/")).text();
     const urls = [...html.matchAll(/https?:\/\/[^\s"'<>)]+/g)].map((m) => m[0]);
-    expect(urls.filter((u) => !u.startsWith("https://piotrmajkutewicz.pl"))).toEqual([]);
+    // The only other address is the IANA prefix that links are checked against before they are rendered.
+    expect(urls.filter((u) => !u.startsWith("https://piotrmajkutewicz.pl") && !u.startsWith("https://www.iana.org/domains/root/db/"))).toEqual([]);
     expect(html).toContain('<a href="https://piotrmajkutewicz.pl" rel="noopener"');
     expect(html).not.toMatch(/<script[^>]+src=|<link[^>]+href=|<img/);
   });
@@ -158,6 +159,14 @@ describe("POST /api/lookup, successful lookups with a fake internet", () => {
     expect(body.lang).toBe("en");
     expect(body.texts.status).toBe("The domain is registered");
     expect(body.neutral.registration.state).toBe("registered");
+  });
+
+  it("returns the registry information link for an ending without RDAP", async () => {
+    vi.stubGlobal("fetch", fakeNet({}).fetch);
+    const body = (await (await post(JSON.stringify({ domain: "firma.xyz" }))).json()) as any;
+    expect(body.neutral.registration.state).toBe("unsupported");
+    expect(body.neutral.registration.registryUrl).toBe("https://www.iana.org/domains/root/db/xyz.html");
+    expect(await call("/").then((r) => r.text())).not.toMatch(/innerHTML/);
   });
 
   it("never turns an internal failure into a detailed error", async () => {

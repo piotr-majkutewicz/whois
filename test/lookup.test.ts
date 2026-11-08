@@ -10,6 +10,7 @@ describe("runLookup, healthy domain", () => {
     const r = await runLookup(domain("www.example.pl"), deps(net));
     expect(r.domain).toBe("example.pl");
     expect(r.submittedHost).toBe("www.example.pl");
+    expect(r.registration.registryUrl).toBeNull();
     expect(r.registration).toMatchObject({ state: "registered", registry: "rdap.registry.example", registrar: "Example Registrar SAS", cached: false, expiryLevel: "ok", dnssec: "unsigned" });
     expect(r.registration.daysToExpiry).toBeGreaterThan(600);
     expect(r.dnsAvailable).toBe(true);
@@ -46,6 +47,7 @@ describe("registry outcomes", () => {
     const net = fakeNet({}, { rdapDomain: () => json({ errorCode: 404 }, 404) });
     const r = await runLookup(domain("wolna.pl"), deps(net));
     expect(r.registration.state).toBe("available");
+    expect(r.registration.registryUrl).toBeNull();
     expect(r.findings).toEqual([]);
     expect(r.mail.rating).toBe("nomail");
   });
@@ -74,6 +76,7 @@ describe("registry outcomes", () => {
     const r = await runLookup(domain("example.pl"), deps(net, { cache, sleep: async (ms) => void sleeps.push(ms) }));
     expect(r.registration.state).toBe("rate_limited");
     expect(r.registration.expires).toBeNull();
+    expect(r.registration.registryUrl).toBe("https://www.iana.org/domains/root/db/pl.html");
     expect(net.count("/domain/")).toBe(2);
     expect(sleeps).toHaveLength(1);
     expect(r.dnsAvailable).toBe(true);
@@ -124,6 +127,7 @@ describe("registry outcomes", () => {
     const net = fakeNet(zone);
     const r = await runLookup(domain("firma.nordap"), deps(net));
     expect(r.registration.state).toBe("unsupported");
+    expect(r.registration.registryUrl).toBe("https://www.iana.org/domains/root/db/nordap.html");
     expect(r.dnsAvailable).toBe(true);
     expect(net.count("/domain/")).toBe(0);
   });

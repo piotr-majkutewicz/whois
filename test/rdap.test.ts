@@ -128,3 +128,18 @@ describe("parseIpNetwork", () => {
     expect(parseIpNetwork({ objectClassName: "ip network" })).toBeNull();
   });
 });
+
+import { registryInfoUrl } from "../src/registryinfo";
+
+describe("registryInfoUrl", () => {
+  it("builds the IANA page of the ending", () => {
+    expect(registryInfoUrl("firma.de")).toBe("https://www.iana.org/domains/root/db/de.html");
+    expect(registryInfoUrl("startup.io")).toBe("https://www.iana.org/domains/root/db/io.html");
+    expect(registryInfoUrl("Przyklad.PL")).toBe("https://www.iana.org/domains/root/db/pl.html");
+    expect(registryInfoUrl("example.co.uk")).toBe("https://www.iana.org/domains/root/db/uk.html");
+    expect(registryInfoUrl("xn--80ak6aa92e.xn--p1ai")).toBe("https://www.iana.org/domains/root/db/xn--p1ai.html");
+  });
+  it("gives nothing for anything that is not a plain ending", () => {
+    for (const d of ["a.b/../c", "firma.d3", "firma.x_y", "firma.", "a.b?x=1", "firma.xn--", "firma.1", "firma.<script>"]) expect(registryInfoUrl(d), d).toBeNull();
+  });
+});

@@ -281,8 +281,8 @@ async function swipe(page, cdp, yDistance) {
     // 4. Registry states shown honestly, using canned results.
     {
       const variants = {
-        rate_limited: ["Rejestr chwilowo ogranicza zapytania, spróbuj za chwilę.", (n) => { n.registration = { ...n.registration, state: "rate_limited", expires: null, daysToExpiry: null, expiryLevel: "unknown", statuses: [], nameservers: [], registrar: null }; }],
-        unsupported: ["Dla tej końcówki rejestr nie udostępnia danych przez RDAP", (n) => { n.registration = { ...n.registration, state: "unsupported", expires: null, daysToExpiry: null, expiryLevel: "unknown", statuses: [], nameservers: [], registrar: null }; }],
+        rate_limited: ["Rejestr chwilowo ogranicza zapytania, spróbuj za chwilę.", (n) => { n.domain = n.unicode = "przyklad.pl"; n.submittedHost = "przyklad.pl"; n.registration = { ...n.registration, registryUrl: "https://www.iana.org/domains/root/db/pl.html", state: "rate_limited", expires: null, daysToExpiry: null, expiryLevel: "unknown", statuses: [], nameservers: [], registrar: null }; }],
+        unsupported: ["Dla tej końcówki rejestr nie udostępnia danych przez RDAP", (n) => { n.domain = n.unicode = "firma.de"; n.submittedHost = "firma.de"; n.registration = { ...n.registration, registryUrl: "https://www.iana.org/domains/root/db/de.html", state: "unsupported", expires: null, daysToExpiry: null, expiryLevel: "unknown", statuses: [], nameservers: [], registrar: null }; }],
         available: ["Rejestr nie ma tej domeny w bazie", (n) => { n.registration = { ...n.registration, state: "available", expires: null, daysToExpiry: null, expiryLevel: "unknown", statuses: [], nameservers: [], registrar: null }; n.findings = []; n.top = []; n.mail.rating = "nomail"; }],
         expiring: ["wygasa za 5 dni", (n) => { n.registration = { ...n.registration, daysToExpiry: 5, expiryLevel: "high" }; n.findings = [{ key: "reg.expires_soon", section: "registration", severity: "high", source: "rdap_domain", params: { days: 5 } }]; n.top = [0]; }],
       };
@@ -300,6 +300,23 @@ async function swipe(page, cdp, yDistance) {
         const text = await page.evaluate(() => document.getElementById("report").textContent.replace(/\s+/g, " "));
         ok(text.includes(needle), `${name}: message shown`);
         ok((await overflowX(page)) <= 0, `${name}: no horizontal overflow`);
+        if (name === "rate_limited" || name === "unsupported" || name === "available") {
+          const link = page.locator("#sec-registration a.reglink");
+          if (name === "available") ok((await link.count()) === 0, "available: no registry link");
+          else {
+            const tld = name === "rate_limited" ? "pl" : "de";
+            ok(await link.isVisible(), `${name}: registry link is visible`);
+            ok((await link.getAttribute("href")) === `https://www.iana.org/domains/root/db/${tld}.html`, `${name}: link goes to the IANA page of .${tld}`);
+            ok((await link.getAttribute("target")) === "_blank" && (await link.getAttribute("rel")) === "noopener noreferrer", `${name}: opens in a new tab with noopener noreferrer`);
+            ok((await link.boundingBox()).height >= 43.9, `${name}: link is at least 44 px high`);
+            ok((await link.textContent()) === `Informacje o rejestrze .${tld} (IANA)`, `${name}: link text is honest about the destination`);
+            const own = await ownText(page);
+            ok(!EN_WORDS.test(own), `${name}: no English words in the Polish view`, (EN_WORDS.exec(own) ?? [""])[0]);
+            await page.evaluate(() => document.querySelector('[data-lang="en"]').click());
+            ok((await link.textContent()) === `Information about the .${tld} registry (IANA)`, `${name}: link text switches language`);
+            ok((await overflowX(page)) <= 0, `${name}: no horizontal overflow in English`);
+          }
+        }
         if (name === "expiring") {
           ok(/Wysokie/.test(text) && /Domena wygasa za 5 dni/.test(text), "expiry warning appears with its level");
         }
