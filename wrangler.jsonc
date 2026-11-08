@@ -2,7 +2,7 @@
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "whois-demo",
   "main": "src/index.ts",
-  "compatibility_date": "2026-11-07",
+  "compatibility_date": "2026-11-08",
   // Custom domain for the public demo. Wrangler creates the DNS record and certificate on deploy.
   // The zone (piotrmajkutewicz.pl) must be on the same Cloudflare account that you deploy with.
   "routes": [{ "pattern": "whois.piotrmajkutewicz.pl", "custom_domain": true }],
