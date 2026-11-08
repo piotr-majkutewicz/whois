@@ -45,6 +45,8 @@ export interface RegistrationInfo {
   dnssec: DnssecState;
   /** The registry says its data may be a few minutes old. */
   delayed: boolean;
+  /** Official information about the registry of this ending (IANA page). Only set when the registry could not answer. */
+  registryUrl: string | null;
   /** True when this answer came from our cache. */
   cached: boolean;
 }

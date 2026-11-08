@@ -9,6 +9,7 @@ import { classifyIp, parseIp } from "./ip";
 import { Net, DEFAULT_NET_OPTIONS, type FetchLike, type NetOptions } from "./net";
 import { detectProviders } from "./providers";
 import { assessExpiry } from "./rdap";
+import { registryInfoUrl } from "./registryinfo";
 import { lookupDomain, lookupIpNetwork, type DomainOutcome, type RegistryContext } from "./registry";
 import { evaluateSpf, isSpfRecord, type SpfFetch } from "./spf";
 import type { DnsGroup, DnsRecordView, Finding, HostingAddress, LookupResult, RegistrationInfo } from "./types";
@@ -45,10 +46,10 @@ function toView(answer: DnsAnswer, types: DnsTypeName[]): DnsRecordView[] {
     .map((r) => ({ type: r.type, name: r.name, ttl: r.ttl, data: r.data.slice(0, MAX_VIEW_CHARS) }));
 }
 
-function registrationInfo(outcome: DomainOutcome, now: Date): RegistrationInfo {
+function registrationInfo(outcome: DomainOutcome, now: Date, domain: string): RegistrationInfo {
   const empty: RegistrationInfo = {
     state: "unavailable", registry: null, registrar: null, registered: null, expires: null, changed: null,
-    daysToExpiry: null, expiryLevel: "unknown", statuses: [], nameservers: [], dnssec: "unknown", delayed: false, cached: false,
+    daysToExpiry: null, expiryLevel: "unknown", statuses: [], nameservers: [], dnssec: "unknown", delayed: false, registryUrl: null, cached: false,
   };
   switch (outcome.kind) {
     case "found": {
@@ -61,8 +62,8 @@ function registrationInfo(outcome: DomainOutcome, now: Date): RegistrationInfo {
       };
     }
     case "available": return { ...empty, state: "available", registry: outcome.registry, cached: outcome.cached === true };
-    case "unsupported": return { ...empty, state: "unsupported" };
-    case "rate_limited": return { ...empty, state: "rate_limited", registry: outcome.registry, cached: outcome.cached === true };
+    case "unsupported": return { ...empty, state: "unsupported", registryUrl: registryInfoUrl(domain) };
+    case "rate_limited": return { ...empty, state: "rate_limited", registry: outcome.registry, registryUrl: registryInfoUrl(domain), cached: outcome.cached === true };
     case "error": return { ...empty, state: "unavailable", registry: outcome.registry };
   }
 }
@@ -90,7 +91,7 @@ export async function runLookup(parsed: Extract<ParsedDomain, { ok: true }>, dep
   ]);
   const [regOutcome, [aA, aAAAA, ns, mx, txt, caa, soa, wA, wAAAA], [dmarcA, mtaStsA, tlsRptA, dkim]] = await Promise.all([regPromise, corePromise, mailPromise]);
 
-  const registration = registrationInfo(regOutcome, now());
+  const registration = registrationInfo(regOutcome, now(), d);
 
   const groups: DnsGroup[] = [];
   const push = (host: "apex" | "www", type: DnsTypeName, a: DnsAnswer, types: DnsTypeName[] = [type]) =>
