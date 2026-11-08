@@ -9,7 +9,7 @@
   "scripts": {
     "dev": "wrangler dev",
     "test": "vitest run",
-    "test:e2e": "node test/e2e/ui.e2e.mjs",
+    "test:e2e": "node test/e2e/ui.e2e.mjs http://127.0.0.1:8970",
     "typecheck": "tsc --noEmit",
     "deploy": "wrangler deploy"
   },
