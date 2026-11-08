@@ -2,7 +2,7 @@
 
 A small Cloudflare Worker that takes a domain name (or a pasted web address or e-mail) and answers, in plain language: is the domain registered and when does it expire, who runs its name servers, which networks it points to, and is the company e-mail set up so that messages arrive instead of landing in spam. It is built for a business owner, yet stays honest about what the data can and cannot prove.
 
-![The UI showing a result for piotrmajkutewicz.pl](docs/ui.png)
+![The UI showing a result for example.com](docs/ui.png)
 
 It is a portfolio project by Piotr Majkutewicz (full-stack developer and solution architect working with small businesses and startups): a conversation starter, not a replacement for a professional review.
 
@@ -51,6 +51,8 @@ Registries rate-limit. NASK (`rdap.dns.pl`, `.pl`) answered with HTTP 429 after 
 - "not found" is only believed when the registry answers 404 with a JSON body; an HTML 404 or any other error is reported as "could not get data", never as "free". Even a real "not found" is worded as "looks available".
 
 Endings without an RDAP service (not in the bootstrap file) get an honest "this registry does not share data through RDAP", and DNS is still shown.
+
+For these two cases (`unsupported` and `rate_limited`) the registration card also offers a link, "Information about the .xx registry (IANA)", opened in a new tab with `rel="noopener noreferrer"`. It points to the IANA page of the ending (`https://www.iana.org/domains/root/db/<tld>.html`), which names the registry and links to it. Registry addresses are deliberately not guessed per ending, and the link is not a search result for the domain: the page says so. The address is built only from the validated ending of the checked domain (letters, or punycode) and sent to the client as `registration.registryUrl`; the page re-validates it before rendering it with the DOM API. The tool itself never sends a request to these pages, it only offers the link.
 
 ## Languages
 
