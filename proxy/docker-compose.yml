@@ -1,0 +1,29 @@
+# No service publishes a port: the only way in is the outbound Cloudflare Tunnel.
+services:
+  rdap-proxy:
+    build: .
+    # Values come from .env (Compose reads it for substitution). The tunnel token is not passed here.
+    environment:
+      PORT: "8080"
+      PROXY_KEY: ${PROXY_KEY}
+      RATE_PER_MIN: ${RATE_PER_MIN:-20}
+      USER_AGENT: ${USER_AGENT:-whois-demo-proxy/1.0 (+https://whois.piotrmajkutewicz.pl)}
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    mem_limit: 64m
+    restart: unless-stopped
+    networks: [internal]
+
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    command: tunnel --no-autoupdate run
+    environment:
+      TUNNEL_TOKEN: ${TUNNEL_TOKEN}
+    mem_limit: 128m
+    restart: unless-stopped
+    depends_on: [rdap-proxy]
+    networks: [internal]
+
+networks:
+  internal: {}
