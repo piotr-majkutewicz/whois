@@ -88,6 +88,8 @@ export const en: Dictionary = {
     regUnsupportedText: "For this ending the registry does not share data through RDAP, so we cannot tell whether the domain is taken or when it expires. DNS was checked below.",
     regRateLimitedText: "The registry is limiting requests for now, try again in a moment. The rest of the check (DNS and e-mail) is below.",
     regUnavailableText: "Could not get data from the registry right now. The rest of the check (DNS and e-mail) is below, and you can check the registration again in a moment.",
+    registryLink: "Information about the .{tld} registry (IANA)",
+    registryLinkHint: "This link leads to the IANA page about the registry of this ending, which links to the official registry. It is not a search result for your domain, and this tool sends no requests there.",
     regDelayNote: "The registry notes that its data can be a few minutes behind.",
     regCachedNote: "Registry data is at most 10 minutes old.",
 

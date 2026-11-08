@@ -147,6 +147,7 @@ ul.plain li{margin:0 0 6px}
 .lang button{min-width:44px;min-height:44px;padding:0 12px;border:1px solid var(--line2);background:transparent;color:var(--text);font-weight:600}
 .lang button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#14110f}
 .cta{margin-top:24px}
+.reglink{display:inline-flex;align-items:center;min-height:44px;color:var(--text);text-underline-offset:3px;font-weight:600}
 .cta a{color:var(--text);text-underline-offset:3px;display:inline-block;padding:10px 0}
 [hidden]{display:none}
 .skeleton .sk{display:block;border-radius:6px;background:var(--line);color:transparent}
@@ -394,12 +395,25 @@ ul.plain li{margin:0 0 6px}
     ].concat(body));
   }
 
+  // The address comes from the server, but it is checked again here: only the IANA page of an ending is accepted.
+  var IANA_PREFIX = "https://www.iana.org/domains/root/db/";
+  function registryLink(n) {
+    var url = n.registration.registryUrl;
+    if (typeof url !== "string" || !/^https:\/\/www\.iana\.org\/domains\/root\/db\/(?:[a-z]{2,63}|xn--[a-z0-9-]{1,59})\.html$/.test(url) || url.indexOf(IANA_PREFIX) !== 0) return null;
+    var parts = (n.unicode || n.domain).split(".");
+    var a = el("a", { class: "reglink", target: "_blank", rel: "noopener noreferrer" }, T("registryLink", { tld: parts[parts.length - 1] }));
+    a.setAttribute("href", url);
+    return el("p", null, [a]);
+  }
+
   function registrationCard(n) {
     var r = n.registration;
     var body = [];
     if (r.state !== "registered") {
       var key = { available: "regAvailableText", unsupported: "regUnsupportedText", rate_limited: "regRateLimitedText", unavailable: "regUnavailableText" }[r.state];
       body.push(el("p", null, T(key)));
+      var link = registryLink(n);
+      if (link) { body.push(link); body.push(el("p", { class: "muted" }, T("registryLinkHint"))); }
       if (r.registry) body.push(el("p", { class: "src" }, T("howWeKnow") + sourceText(n, "rdap_domain")));
       return card("registration", "sectionRegistration", registrationLevel(n), body);
     }

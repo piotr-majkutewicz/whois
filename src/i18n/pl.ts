@@ -88,6 +88,8 @@ export const pl: Dictionary = {
     regUnsupportedText: "Dla tej końcówki rejestr nie udostępnia danych przez RDAP, więc nie wiemy, czy domena jest zajęta ani kiedy wygasa. Poniżej sprawdziliśmy DNS.",
     regRateLimitedText: "Rejestr chwilowo ogranicza zapytania, spróbuj za chwilę. Reszta sprawdzenia (DNS i poczta) jest poniżej.",
     regUnavailableText: "Nie udało się teraz pobrać danych z rejestru. Reszta sprawdzenia (DNS i poczta) jest poniżej, a rejestrację możesz sprawdzić ponownie za chwilę.",
+    registryLink: "Informacje o rejestrze .{tld} (IANA)",
+    registryLinkHint: "Ten link prowadzi do strony IANA o rejestrze tej końcówki, gdzie jest odnośnik do oficjalnego rejestru. To nie jest wynik wyszukiwania Twojej domeny, a to narzędzie nie wysyła tam żadnych zapytań.",
     regDelayNote: "Rejestr zaznacza, że jego dane mogą być opóźnione o kilka minut.",
     regCachedNote: "Dane z rejestru pochodzą sprzed najwyżej 10 minut.",
 

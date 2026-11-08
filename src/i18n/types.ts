@@ -99,7 +99,7 @@ export const UI_KEYS = [
   // registration card
   "rowRegistrar", "rowRegistered", "rowExpires", "rowChanged", "rowStatuses", "rowNameservers", "rowDnssec", "rowOwner",
   "ownerHidden", "dnssecSigned", "dnssecUnsigned", "dnssecUnknown", "valueUnknown",
-  "regAvailableText", "regUnsupportedText", "regRateLimitedText", "regUnavailableText", "regDelayNote", "regCachedNote",
+  "regAvailableText", "regUnsupportedText", "regRateLimitedText", "regUnavailableText", "registryLink", "registryLinkHint", "regDelayNote", "regCachedNote",
   // dns card
   "dnsIntro", "hostApex", "hostWww", "dnsNone", "dnsFailed", "dnsUnavailable", "providersHeading", "providersNote", "providerMail", "providerDns",
   "providerFoundBy", "noProviders",
