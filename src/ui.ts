@@ -95,7 +95,7 @@ button .spin[hidden]{display:none}
 .head h2.dom{margin:0 0 6px;font-size:clamp(1.4rem,5vw,1.9rem);line-height:1.25;overflow-wrap:anywhere}
 .head p{display:flex;align-items:center;margin:0 0 4px;min-height:1.6em}
 .head .sub{font-size:.9rem}
-.copy{min-height:44px;margin-top:8px;padding:0 16px;background:transparent;color:var(--text);border:1px solid var(--line2);font-weight:600}
+.copy{display:block;min-height:44px;margin-top:8px;padding:0 16px;background:transparent;color:var(--text);border:1px solid var(--line2);font-weight:600}
 .chip{display:inline-flex;align-items:center;gap:6px;font-weight:700}
 .chip .ic,.mk{flex:none;display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;font-size:.8rem;font-weight:800;line-height:1;background:currentColor}
 .chip .ic,.mk{color:inherit}
@@ -715,6 +715,7 @@ ul.plain li{margin:0 0 6px}
   // Sets the language of every static text.
   function apply(l) {
     lang = l;
+    live.textContent = ""; // an old announcement would be in the wrong language
     document.documentElement.lang = l;
     document.title = T("metaTitle");
     var meta = document.querySelector('meta[name="description"]');
