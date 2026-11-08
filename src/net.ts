@@ -60,7 +60,7 @@ export class Net {
   }
 
   /** GET a URL and read the body as JSON (null when it is not JSON). */
-  async getJson(url: string, accept: string): Promise<NetResult> {
+  async getJson(url: string, accept: string, extraHeaders: Record<string, string> = {}): Promise<NetResult> {
     await this.acquire();
     try {
       if (this.remainingMs() <= 0) {
@@ -75,7 +75,7 @@ export class Net {
       const ctrl = new AbortController();
       const timer = setTimeout(() => ctrl.abort(), Math.max(50, Math.min(this.options.callTimeoutMs, this.remainingMs())));
       try {
-        const res = await this.fetchImpl(url, { headers: { accept, "user-agent": USER_AGENT }, signal: ctrl.signal, redirect: "follow" });
+        const res = await this.fetchImpl(url, { headers: { accept, "user-agent": USER_AGENT, ...extraHeaders }, signal: ctrl.signal, redirect: "follow" });
         const text = await res.text();
         let body: unknown = null;
         if (text.length <= MAX_BODY_CHARS) {

@@ -47,6 +47,8 @@ export interface RegistrationInfo {
   delayed: boolean;
   /** Official information about the registry of this ending (IANA page). Only set when the registry could not answer. */
   registryUrl: string | null;
+  /** "proxy" when the registry was asked through the optional intermediary. */
+  via: "proxy" | null;
   /** True when this answer came from our cache. */
   cached: boolean;
 }

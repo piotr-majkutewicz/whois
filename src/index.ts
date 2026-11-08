@@ -3,11 +3,14 @@ import { parseDomainInput, type DomainRejection } from "./domain";
 import { DEFAULT_LANG, dictionary, isLang, type ErrorKey, type Lang } from "./i18n";
 import { localize } from "./i18n/localize";
 import { runLookup } from "./lookup";
+import { parseProxyConfig, type ProxyEnv } from "./proxy";
 import { renderUi } from "./ui";
 
-export interface Env {
+export interface Env extends ProxyEnv {
   /** Optional: the binding is missing in some local setups and the code copes with that. */
   RATE_LIMITER?: RateLimit;
+  // Optional proxy for the .pl registry. RDAP_PROXY_URL is plain configuration; the other three are secrets
+  // (wrangler secret put). Without them the registry is asked directly.
 }
 
 const MAX_BODY_BYTES = 2048;
@@ -136,9 +139,20 @@ async function handleLookup(request: Request, env: Env, queryLanguage: Lang): Pr
   if (!parsed.ok) return apiError(400, "invalid_domain", REJECTION_KEY[parsed.reason], lang);
 
   try {
-    const result = await runLookup(parsed, { fetch: (u, init) => fetch(u, init), cache: defaultCache() });
+    const result = await runLookup(parsed, { fetch: (u, init) => fetch(u, init), cache: defaultCache(), proxy: proxyFrom(env) });
     return json({ lang, neutral: result, texts: localize(result, lang) });
   } catch {
     return apiError(500, "internal_error", "internal_error", lang);
   }
+}
+
+let warned = false;
+/** Proxy settings from the environment. Bad settings are ignored with a single warning that names no value. */
+function proxyFrom(env: Env) {
+  const { config, problem } = parseProxyConfig(env);
+  if (problem && !warned) {
+    warned = true;
+    console.warn(`RDAP proxy ignored: ${problem === "url" ? "RDAP_PROXY_URL is not a valid https host name" : "RDAP_PROXY_KEY is missing"}`);
+  }
+  return config;
 }

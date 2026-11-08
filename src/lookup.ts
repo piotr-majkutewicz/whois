@@ -9,6 +9,7 @@ import { classifyIp, parseIp } from "./ip";
 import { Net, DEFAULT_NET_OPTIONS, type FetchLike, type NetOptions } from "./net";
 import { detectProviders } from "./providers";
 import { assessExpiry } from "./rdap";
+import type { ProxyConfig } from "./proxy";
 import { registryInfoUrl } from "./registryinfo";
 import { lookupDomain, lookupIpNetwork, type DomainOutcome, type RegistryContext } from "./registry";
 import { evaluateSpf, isSpfRecord, type SpfFetch } from "./spf";
@@ -27,6 +28,8 @@ export interface LookupDeps {
   now?: () => Date;
   sleep?: (ms: number) => Promise<void>;
   options?: NetOptions;
+  /** Optional proxy for the .pl registry (see src/proxy.ts). */
+  proxy?: ProxyConfig | null;
 }
 
 const defaultSleep = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
@@ -49,7 +52,7 @@ function toView(answer: DnsAnswer, types: DnsTypeName[]): DnsRecordView[] {
 function registrationInfo(outcome: DomainOutcome, now: Date, domain: string): RegistrationInfo {
   const empty: RegistrationInfo = {
     state: "unavailable", registry: null, registrar: null, registered: null, expires: null, changed: null,
-    daysToExpiry: null, expiryLevel: "unknown", statuses: [], nameservers: [], dnssec: "unknown", delayed: false, registryUrl: null, cached: false,
+    daysToExpiry: null, expiryLevel: "unknown", statuses: [], nameservers: [], dnssec: "unknown", delayed: false, registryUrl: null, via: null, cached: false,
   };
   switch (outcome.kind) {
     case "found": {
@@ -58,12 +61,12 @@ function registrationInfo(outcome: DomainOutcome, now: Date, domain: string): Re
       return {
         ...empty, state: "registered", registry: outcome.registry, registrar: d.registrar, registered: d.registered,
         expires: d.expires, changed: d.changed, daysToExpiry: e.days, expiryLevel: e.level, statuses: d.statuses,
-        nameservers: d.nameservers, dnssec: d.dnssec, delayed: d.delayed, cached: outcome.cached === true,
+        nameservers: d.nameservers, dnssec: d.dnssec, delayed: d.delayed, via: outcome.via ?? null, cached: outcome.cached === true,
       };
     }
-    case "available": return { ...empty, state: "available", registry: outcome.registry, cached: outcome.cached === true };
+    case "available": return { ...empty, state: "available", registry: outcome.registry, via: outcome.via ?? null, cached: outcome.cached === true };
     case "unsupported": return { ...empty, state: "unsupported", registryUrl: registryInfoUrl(domain) };
-    case "rate_limited": return { ...empty, state: "rate_limited", registry: outcome.registry, registryUrl: registryInfoUrl(domain), cached: outcome.cached === true };
+    case "rate_limited": return { ...empty, state: "rate_limited", registry: outcome.registry, registryUrl: registryInfoUrl(domain), via: outcome.via ?? null, cached: outcome.cached === true };
     case "error": return { ...empty, state: "unavailable", registry: outcome.registry };
   }
 }
@@ -76,6 +79,7 @@ export async function runLookup(parsed: Extract<ParsedDomain, { ok: true }>, dep
     cache: deps.cache ?? new MemoryCache(),
     inflight: deps.inflight ?? sharedInflight,
     sleep: deps.sleep ?? defaultSleep,
+    proxy: deps.proxy ?? null,
   };
   const d = parsed.domain;
   const q = (name: string, type: DnsTypeName) => doh(net, name, type);

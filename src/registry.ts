@@ -8,6 +8,7 @@ import {
 } from "./rdap";
 import { tldOf } from "./domain";
 import { parseIp } from "./ip";
+import { PROXIED_REGISTRY_HOST, proxyHeaders, type ProxyConfig } from "./proxy";
 
 export const BOOTSTRAP_URLS = {
   dns: "https://data.iana.org/rdap/dns.json",
@@ -28,13 +29,15 @@ export interface RegistryContext {
   /** Parallel lookups of the same domain in one isolate share one registry query. */
   inflight: Map<string, Promise<DomainOutcome>>;
   sleep: (ms: number) => Promise<void>;
+  /** Optional proxy for the .pl registry. */
+  proxy?: ProxyConfig | null;
 }
 
 export type DomainOutcome =
-  | { kind: "found"; registry: string; data: DomainRdap; cached?: boolean }
-  | { kind: "available"; registry: string; cached?: boolean }
+  | { kind: "found"; registry: string; data: DomainRdap; cached?: boolean; via?: "proxy" }
+  | { kind: "available"; registry: string; cached?: boolean; via?: "proxy" }
   | { kind: "unsupported" }
-  | { kind: "rate_limited"; registry: string; cached?: boolean }
+  | { kind: "rate_limited"; registry: string; cached?: boolean; via?: "proxy" }
   | { kind: "error"; registry: string | null };
 
 async function bootstrap(kind: keyof typeof BOOTSTRAP_URLS, ctx: RegistryContext): Promise<BootstrapFile | null> {
@@ -64,6 +67,23 @@ async function fetchDomain(domain: string, ctx: RegistryContext): Promise<Domain
   if (!base) return { kind: "unsupported" };
   const registry = hostOf(base);
   const url = `${base}domain/${encodeURIComponent(domain)}`;
+
+  // The .pl registry limits requests from the Workers address pool: ask through the proxy when there is one.
+  // Only a clear answer ends the matter. Anything else (network error, timeout, 5xx, an HTML page from an
+  // access gateway, a wrong key) falls back to asking the registry directly.
+  if (ctx.proxy && registry === PROXIED_REGISTRY_HOST) {
+    const res = await ctx.net.getJson(`${ctx.proxy.base}/rdap/domain/${encodeURIComponent(domain)}`, RDAP_ACCEPT, proxyHeaders(ctx.proxy));
+    if (res.kind === "response") {
+      if (res.status === 200) {
+        const data = parseDomainRdap(res.body);
+        if (data) return { kind: "found", registry, data, via: "proxy" };
+      } else if (res.status === 404 && /json/i.test(res.contentType) && res.body !== null) {
+        return { kind: "available", registry, via: "proxy" };
+      } else if (res.status === 429) {
+        return { kind: "rate_limited", registry, via: "proxy" };
+      }
+    }
+  }
 
   for (let attempt = 1; attempt <= 2; attempt++) {
     const res = await ctx.net.getJson(url, RDAP_ACCEPT);
