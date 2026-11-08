@@ -1,3 +1,10 @@
+
+/**
+ * Honest identification for registries and resolvers: the tool name and a page that explains what it is.
+ * It lets a registry recognise the traffic (and contact the owner) instead of seeing an anonymous client.
+ */
+export const USER_AGENT = "whois-demo/1.0 (+https://whois.piotrmajkutewicz.pl; domain lookup tool by Piotr Majkutewicz)";
+
 // Outbound requests with a hard budget, a time limit per call, a total deadline and bounded concurrency.
 
 export interface NetOptions {
@@ -68,7 +75,7 @@ export class Net {
       const ctrl = new AbortController();
       const timer = setTimeout(() => ctrl.abort(), Math.max(50, Math.min(this.options.callTimeoutMs, this.remainingMs())));
       try {
-        const res = await this.fetchImpl(url, { headers: { accept }, signal: ctrl.signal, redirect: "follow" });
+        const res = await this.fetchImpl(url, { headers: { accept, "user-agent": USER_AGENT }, signal: ctrl.signal, redirect: "follow" });
         const text = await res.text();
         let body: unknown = null;
         if (text.length <= MAX_BODY_CHARS) {
