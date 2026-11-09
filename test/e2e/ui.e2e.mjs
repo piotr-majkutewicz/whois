@@ -119,6 +119,8 @@ async function swipe(page, cdp, yDistance) {
       ok((await overflowX(page)) <= 0, "no horizontal overflow on the empty page");
       await page.fill("#domain", "example.com");
       const t = await page.evaluate(async () => {
+        const labelBefore = document.getElementById("goText").textContent;
+        const w0 = document.getElementById("go").getBoundingClientRect();
         const t0 = performance.now();
         document.getElementById("go").click();
         await new Promise((r) => requestAnimationFrame(() => r()));
@@ -128,6 +130,9 @@ async function swipe(page, cdp, yDistance) {
           loading: !document.getElementById("loading").hidden,
           disabled: document.getElementById("go").disabled,
           label: document.getElementById("goText").textContent,
+          labelBefore,
+          btnBusy: document.getElementById("go").classList.contains("busy"),
+          sameSize: (() => { const r = document.getElementById("go").getBoundingClientRect(); return Math.abs(r.width - w0.width) < 0.5 && Math.abs(r.height - w0.height) < 0.5; })(),
           spinner: !document.querySelector("#go .spin").hidden,
           busy: document.getElementById("result").getAttribute("aria-busy"),
           live: document.getElementById("live").textContent.trim(),
@@ -136,7 +141,7 @@ async function swipe(page, cdp, yDistance) {
       });
       ok(t.ms < 100, "loading state within 100 ms of the click", `${t.ms.toFixed(1)} ms`);
       ok(t.skeleton && t.loading && t.disabled && t.spinner, "skeleton, note, spinner and lock are active");
-      ok(t.label === "Sprawdzam domenę..." && t.busy === "true", "busy label and aria-busy");
+      ok(t.label === t.labelBefore && t.busy === "true" && t.btnBusy && t.sameSize, "button keeps its size, its label, shows only the spinner, aria-busy set");
       ok(t.live === "Trwa sprawdzanie", "live region announces the check", t.live);
       ok(t.text === "Pytam rejestr domen i serwery DNS, to zwykle trwa kilka sekund", "honest loading text, no invented stages");
       await page.locator("#domain").press("Enter");

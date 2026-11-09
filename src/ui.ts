@@ -73,6 +73,9 @@ label{flex-basis:100%;font-weight:600}
 input{flex:1 1 240px;min-width:0;min-height:48px;padding:0 14px;border-radius:8px;border:1px solid var(--line2);background:var(--panel);color:var(--text);font:inherit}
 button{min-height:48px;padding:0 24px;border:0;border-radius:8px;background:var(--accent);color:#14110f;font:inherit;font-weight:700;cursor:pointer}
 button:disabled{opacity:.6;cursor:wait}
+#go{position:relative;min-width:120px}
+#go.busy #goText{visibility:hidden}
+#go.busy .spin{position:absolute;left:50%;top:50%;margin:-.5em 0 0 -.5em;vertical-align:baseline}
 :focus-visible{outline:3px solid var(--text);outline-offset:2px}
 .result{position:relative;margin-top:16px}
 .sr-only{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
@@ -431,7 +434,7 @@ ul.plain li{margin:0 0 6px}
     rows.push(row(T("rowStatuses"), [st.length ? el("ul", { class: "plain" }, st) : T("valueUnknown"), src()]));
     rows.push(row(T("rowNameservers"), [r.nameservers.length ? el("ul", { class: "plain" }, r.nameservers.map(function (h) { return el("li", null, [raw(h)]); })) : T("valueUnknown"), src()]));
     rows.push(row(T("rowDnssec"), [r.dnssec === "signed" ? T("dnssecSigned") : r.dnssec === "unsigned" ? T("dnssecUnsigned") : T("dnssecUnknown"), src()]));
-    rows.push(row(T("rowOwner"), [T("ownerHidden"), src()]));
+    rows.push(row(T("rowOwner"), [r.registrant ? raw(r.registrant.name + (r.registrant.country ? " (" + r.registrant.country + ")" : ""), "span") : T("ownerHidden"), src()]));
     body.push(el("dl", null, rows));
     if (r.delayed) body.push(el("p", { class: "muted" }, T("regDelayNote")));
     if (r.cached) body.push(el("p", { class: "muted" }, T("regCachedNote")));
@@ -632,7 +635,7 @@ ul.plain li{margin:0 0 6px}
     go.disabled = on;
     input.readOnly = on;
     goSpin.hidden = !on;
-    setText(goText, on ? "submitBusy" : "submit");
+    go.classList.toggle("busy", on);
     resultEl.setAttribute("aria-busy", String(on));
   }
   function clearTimers() { window.clearTimeout(slowTimer); window.clearTimeout(timeoutTimer); }

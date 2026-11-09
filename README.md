@@ -37,7 +37,7 @@ Mail gets a rating (well configured / needs improvement / at risk / no mail) and
 
 ### GDPR and personal data
 
-Registries often return contact data, even when a record is marked "redacted": a real `.pl` answer for a sole proprietor included name, street and phone number. The parser therefore reads a **fixed whitelist** of fields only (registrar name from the entity with the `registrar` role, event dates, statuses, name servers, DNSSEC flag). Registrant, administrative, technical and abuse contacts are never read, so they cannot leak, and a test checks this with fixtures that contain such data. DMARC report addresses are reduced to a count. For IP networks only organisation names (vCard kind `org`) are used, never people. The page tells the visitor that owner data is hidden.
+Registries often return contact data, even when a record is marked "redacted": a real `.pl` answer for a sole proprietor included name, street and phone number. The parser therefore reads a **fixed whitelist** of fields only (registrar name from the entity with the `registrar` role, event dates, statuses, name servers, DNSSEC flag, and the registrant's name and country code, but only when the registry marks the registrant as an organisation, vCard kind `org`; street, phone and e-mail are never read). Registrants marked as individuals, administrative, technical and abuse contacts are never read, so they cannot leak, and a test checks this with fixtures that contain such data. DMARC report addresses are reduced to a count. For IP networks only organisation names (vCard kind `org`) are used, never people. When the registry does not publish an owner, the page says so.
 
 ### Registry limits
 

@@ -99,6 +99,8 @@ export type DnssecState = "signed" | "unsigned" | "unknown";
 
 export interface DomainRdap {
   registrar: string | null;
+  /** Registrant name and country, only when the registry marks the registrant as an organisation. Never street, phone or e-mail. */
+  registrant: { name: string; country: string | null } | null;
   registered: string | null;
   expires: string | null;
   changed: string | null;
@@ -128,7 +130,7 @@ function rolesOf(entity: Json): string[] {
 
 /**
  * Name of the registrar. Only an entity with the "registrar" role is read, and only its formatted name.
- * Registrant, administrative and technical contacts are never looked at. A registrar that is marked as an
+ * Administrative and technical contacts are never looked at. A registrar that is marked as an
  * individual is dropped too, as a precaution.
  */
 function registrarName(entities: unknown): string | null {
@@ -139,6 +141,31 @@ function registrarName(entities: unknown): string | null {
     if (kind && kind.toLowerCase() === "individual") return null;
     const fn = vcardValue(e, "fn")?.trim();
     if (fn) return fn.slice(0, 120);
+  }
+  return null;
+}
+
+/**
+ * Public registrant: only an entity with the "registrant" role and vCard kind "org" is read, and only its name
+ * and country code. Street, phone and e-mail are never read. Registrants marked as individuals are dropped.
+ */
+function registrantInfo(entities: unknown): { name: string; country: string | null } | null {
+  if (!Array.isArray(entities)) return null;
+  for (const e of entities) {
+    if (!isObj(e) || !rolesOf(e).includes("registrant")) continue;
+    if (vcardValue(e, "kind")?.toLowerCase() !== "org") continue;
+    const name = vcardValue(e, "fn")?.trim();
+    if (!name) continue;
+    let country: string | null = null;
+    const arr = e.vcardArray;
+    if (Array.isArray(arr) && Array.isArray(arr[1])) {
+      for (const item of arr[1] as unknown[]) {
+        if (Array.isArray(item) && item[0] === "adr" && isObj(item[1]) && typeof item[1].cc === "string" && /^[A-Za-z]{2}$/.test(item[1].cc)) {
+          country = item[1].cc.toUpperCase();
+        }
+      }
+    }
+    return { name: name.slice(0, 120), country };
   }
   return null;
 }
@@ -170,6 +197,7 @@ export function parseDomainRdap(body: unknown): DomainRdap | null {
     : false;
   return {
     registrar: registrarName(body.entities),
+    registrant: registrantInfo(body.entities),
     registered: eventDate(body.events, "registration"),
     expires: eventDate(body.events, "expiration"),
     changed: eventDate(body.events, "last changed"),

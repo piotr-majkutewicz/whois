@@ -51,7 +51,7 @@ function toView(answer: DnsAnswer, types: DnsTypeName[]): DnsRecordView[] {
 
 function registrationInfo(outcome: DomainOutcome, now: Date, domain: string): RegistrationInfo {
   const empty: RegistrationInfo = {
-    state: "unavailable", registry: null, registrar: null, registered: null, expires: null, changed: null,
+    state: "unavailable", registry: null, registrar: null, registrant: null, registered: null, expires: null, changed: null,
     daysToExpiry: null, expiryLevel: "unknown", statuses: [], nameservers: [], dnssec: "unknown", delayed: false, registryUrl: null, via: null, cached: false,
   };
   switch (outcome.kind) {
@@ -59,7 +59,7 @@ function registrationInfo(outcome: DomainOutcome, now: Date, domain: string): Re
       const d = outcome.data;
       const e = assessExpiry(d.expires, now);
       return {
-        ...empty, state: "registered", registry: outcome.registry, registrar: d.registrar, registered: d.registered,
+        ...empty, state: "registered", registry: outcome.registry, registrar: d.registrar, registrant: d.registrant, registered: d.registered,
         expires: d.expires, changed: d.changed, daysToExpiry: e.days, expiryLevel: e.level, statuses: d.statuses,
         nameservers: d.nameservers, dnssec: d.dnssec, delayed: d.delayed, via: outcome.via ?? null, cached: outcome.cached === true,
       };

@@ -30,10 +30,16 @@ describe("parseDomainRdap", () => {
   it("never lets personal data through", () => {
     for (const name of ["rdap-pl.json", "rdap-com.json"]) {
       const out = JSON.stringify(parseDomainRdap(fixture(name)));
-      for (const secret of ["Jan Kowalski", "Anna Nowak", "Abuse Person", "Przykladowa", "500600700", "invalid", "Olsztyn", "10-000"]) {
+      for (const secret of ["Anna Nowak", "Abuse Person", "Przykladowa", "500600700", "invalid", "Olsztyn", "10-000"]) {
         expect(out, `${name} leaks ${secret}`).not.toContain(secret);
       }
     }
+  });
+
+  it("reads the registrant only as an organisation, with name and country and nothing else", () => {
+    const r = parseDomainRdap(fixture("rdap-pl.json"))!;
+    expect(r.registrant).toEqual({ name: "Jan Kowalski", country: "PL" });
+    expect(parseDomainRdap(fixture("rdap-com.json"))!.registrant).toBeNull();
   });
 
   it("drops a registrar that is marked as a private person", () => {

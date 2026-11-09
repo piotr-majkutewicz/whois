@@ -136,7 +136,7 @@ describe("POST /api/lookup, input handling", () => {
 });
 
 describe("POST /api/lookup, successful lookups with a fake internet", () => {
-  it("returns neutral data and texts, with no personal data", async () => {
+  it("returns neutral data and texts, with no street, phone or e-mail", async () => {
     const net = fakeNet(healthyZone());
     vi.stubGlobal("fetch", net.fetch);
     const res = await post(JSON.stringify({ domain: "https://www.example.pl/kontakt" }));
@@ -150,7 +150,7 @@ describe("POST /api/lookup, successful lookups with a fake internet", () => {
     expect(body.neutral.mail.rating).toBe("good");
     expect(body.texts.status).toBe("Domena jest zajęta");
     expect(body.texts.mailRating).toBe("Dobrze skonfigurowana");
-    for (const secret of ["Jan Kowalski", "Przykladowa", "500600700", "jan@example.invalid", "Tech Person"]) expect(raw).not.toContain(secret);
+    for (const secret of ["Przykladowa", "500600700", "jan@example.invalid", "Tech Person"]) expect(raw).not.toContain(secret);
   });
 
   it("answers in English when asked and the body field beats the query string", async () => {

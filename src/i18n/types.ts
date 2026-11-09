@@ -82,7 +82,7 @@ export type RecordTypeKey = (typeof RECORD_TYPE_KEYS)[number];
 
 export const UI_KEYS = [
   // page
-  "metaTitle", "metaDescription", "heading", "intro", "langSwitchLabel", "domainLabel", "domainPlaceholder", "submit", "submitBusy",
+  "metaTitle", "metaDescription", "heading", "intro", "langSwitchLabel", "domainLabel", "domainPlaceholder", "submit",
   "loadingText", "loadingSlow", "announceLoading", "announceDone", "resultLabel",
   // errors in the page
   "errorNetwork", "errorTimeout", "errorGeneric", "errorHintGeneric", "errorHintRate", "errorHintNetwork", "errorHintSlow", "errorHintInput", "retry",

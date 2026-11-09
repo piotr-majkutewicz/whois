@@ -35,6 +35,7 @@ export interface RegistrationInfo {
   /** Registry host (for example "rdap.dns.pl"), used in the "how we know" line. */
   registry: string | null;
   registrar: string | null;
+  registrant: { name: string; country: string | null } | null;
   registered: string | null;
   expires: string | null;
   changed: string | null;
