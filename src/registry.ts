@@ -82,6 +82,10 @@ async function fetchDomain(domain: string, ctx: RegistryContext): Promise<Domain
       } else if (res.status === 429) {
         return { kind: "rate_limited", registry, via: "proxy" };
       }
+      // No values, only the status and the kind of content, so that a failing setup can be diagnosed with `wrangler tail`.
+      console.warn(`RDAP proxy gave no usable answer: status ${res.status}, content-type ${res.contentType.split(";")[0] || "none"}, falling back to the registry`);
+    } else {
+      console.warn(`RDAP proxy request failed: ${res.reason}, falling back to the registry`);
     }
   }
 
